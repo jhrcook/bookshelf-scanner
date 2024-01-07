@@ -23,6 +23,7 @@ dependencies = [
     "matplotlib",
     "typer",
     "pydantic",
+    "more-itertools",
 ]
 
 [project.scripts]
@@ -105,7 +106,7 @@ select = [
     "PERF",
     "RUF",
 ]
-ignore = ["D211", "D213"]
+ignore = ["D211", "D213", "E501", "ANN101"]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
