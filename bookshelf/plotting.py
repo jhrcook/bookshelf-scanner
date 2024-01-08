@@ -20,3 +20,12 @@ def plot_lines(img: np.ndarray, lines: Iterable[Line], ax: Axes | None = None) -
 
     ax.set_axis_off()
     ax.imshow(img)
+
+
+def set_axes_off(axes: Axes | np.ndarray) -> None:
+    """Turn all axes off (useful for plotting images)."""
+    if isinstance(axes, Axes):
+        axes.set_axis_off()
+    else:
+        for ax in axes.flatten():
+            ax.set_axis_off()

@@ -3,27 +3,11 @@
 from pathlib import Path
 
 import numpy as np
+from more_itertools import flatten
 
 from . import find_shelves
-from .models import Book, BookData, Shelf
-
-
-def find_books(shelf: Shelf, output_dir: Path | None = None) -> list[Book]:
-    """Find books on a shelf.
-
-    # TODO
-
-    Args:
-    ----
-        shelf (Shelf): Shelf extracted from an image.
-        output_dir (Path | None, optional): Output directory where intermediate results can be saved. Defaults to None.
-
-    Returns:
-    -------
-        list[Book]: List of books isolated from the shelf.
-    """
-    # Note there may be duplicates because of windowed search.
-    return []
+from .find_books import find_books
+from .models import Book, BookData
 
 
 def read_book_data(book: Book, output_dir: Path | None = None) -> BookData:
@@ -58,6 +42,6 @@ def extract_books_from_bookshelf_image(
         list[BookData]: Isolated book data.
     """
     shelves = find_shelves.find_shelves(img, output_dir)
-    # books = flatten([find_books(s, output_dir) for s in shelves])
+    _books = flatten([find_books(s, output_dir) for s in shelves])
     # book_info = [read_book_data(b, output_dir) for b in books]
     return []

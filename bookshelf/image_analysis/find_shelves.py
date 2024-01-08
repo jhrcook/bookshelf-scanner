@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage as ski
+from loguru import logger
 
 from ..plotting import plot_lines
 from .models import Line, Point, Shelf
@@ -41,10 +42,22 @@ def isolate_shelf(img: np.ndarray, top: Line, bottom: Line, key: str) -> Shelf:
     return Shelf(key=key, top=top, bottom=bottom, image=warped)
 
 
-def _plot_shelf(shelf: Shelf, output_dir: Path | None) -> None:
+def _plot_shelves(shelves: list[Shelf], output_dir: Path | None) -> None:
     if output_dir is None:
         return
-    ...
+    width = 9
+    img_heights = [s.image.shape[0] for s in shelves]
+    img_height = sum(img_heights)
+    img_width = shelves[0].image.shape[1]
+    height = width / img_width * img_height
+    fig, axes = plt.subplots(
+        nrows=len(shelves), figsize=(width, height), height_ratios=img_heights
+    )
+    axes = axes.flatten()
+    for ax, shelf in zip(axes, shelves, strict=False):
+        ax.imshow(shelf.image)
+        ax.set_axis_off()
+    fig.savefig(output_dir / "shelves-isolated.jpeg", dpi=300)
 
 
 def _plot_shelf_lines(
@@ -60,13 +73,16 @@ def _plot_shelf_lines(
     fig.savefig(output_dir / "shelves.jpeg", dpi=300)
 
 
-def find_shelves(img: np.ndarray, output_dir: Path | None = None) -> list[Shelf]:
+def find_shelves(
+    img: np.ndarray, output_dir: Path | None = None, min_shelf_height: int = 300
+) -> list[Shelf]:
     """Isolate the shelves from an image of a bookshelf.
 
     Args:
     ----
         img (np.ndarray): Image of a bookshelf.
         output_dir (Path | None, optional): Output directory where intermediate results can be saved. Defaults to None.
+        min_shelf_height (int): Minimum height for a shelf. Defaults to 300.
 
     Returns:
     -------
@@ -78,9 +94,11 @@ def find_shelves(img: np.ndarray, output_dir: Path | None = None) -> list[Shelf]
     shelf_lines.append(Line(point=Point(row=img.shape[0], col=0), slope=0))
     _plot_shelf_lines(img, lines=shelf_lines, output_dir=output_dir)
 
-    shelves = []
-    for i, (top, bottom) in enumerate(itertools.pairwise(shelf_lines)):
-        shelf = isolate_shelf(img, top, bottom, key=f"shelf-{i}")
-        _plot_shelf(shelf, output_dir)
-        shelves.append(shelf)
+    shelves = [
+        isolate_shelf(img, t, b, key=f"shelf-{i}")
+        for i, (t, b) in enumerate(itertools.pairwise(shelf_lines))
+    ]
+    shelves = list(filter(lambda s: s.image.shape[0] >= min_shelf_height, shelves))
+    logger.info(f"Found {len(shelves)} shelves.")
+    _plot_shelves(shelves, output_dir)
     return shelves

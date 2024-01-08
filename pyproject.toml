@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.scripts]
-shelf = "bookshelf.cli:app"
+books = "bookshelf.cli:app"
 
 [project.optional-dependencies]
 test = ["pytest"]

@@ -1,5 +1,6 @@
 """Command line interface."""
 
+import shutil
 from pathlib import Path
 from typing import Annotated
 
@@ -23,7 +24,8 @@ def main(
     ],
 ) -> None:
     """Identify books."""
-    if not output_dir.exists():
-        output_dir.mkdir()
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    output_dir.mkdir()
     results = scan(image_file, output_dir=output_dir)
     print(results)

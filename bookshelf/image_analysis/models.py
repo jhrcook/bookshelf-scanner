@@ -45,6 +45,10 @@ class Line:
         """Column of a line at a given row."""
         return self.point.col - ((self.point.row - at_row) / self.slope)
 
+    def __hash__(self) -> int:
+        """Generate unique hash."""
+        return hash(f"point: {self.point}  --  slope: {self.slope}")
+
 
 @dataclass
 class Shelf:
@@ -65,7 +69,7 @@ class Book:
     key: str
     left: Line
     right: Line
-    img: np.ndarray
+    image: np.ndarray
 
 
 @dataclass
