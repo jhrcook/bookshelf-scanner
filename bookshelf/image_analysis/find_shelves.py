@@ -20,7 +20,7 @@ def find_shelf_lines(img: np.ndarray) -> list[Line]:
     prepped_img = ski.filters.sobel_h(prepped_img)
     prepped_img = ski.feature.canny(prepped_img, sigma=1)
     tested_angles = np.linspace(np.pi * 4 / 3, np.pi * 5 / 3, 101, endpoint=True)
-    return find_lines(prepped_img, tested_angles, min_dist=100)
+    return find_lines(prepped_img, tested_angles, min_dist=100).lines
 
 
 def isolate_shelf(img: np.ndarray, top: Line, bottom: Line, key: str) -> Shelf:

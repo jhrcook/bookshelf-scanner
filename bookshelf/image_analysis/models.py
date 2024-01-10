@@ -37,6 +37,11 @@ class Line:
         y = self.slope * point[1] + self.row_intercept
         return point[0] > y
 
+    def is_right_of(self, point: Point) -> bool:
+        """Is the line to the right of a given point."""
+        col = self.col(at_row=point.row)
+        return point.col < col
+
     def row(self, at_col: float) -> float:
         """Row of a line at a given column."""
         return self.slope * at_col + self.row_intercept

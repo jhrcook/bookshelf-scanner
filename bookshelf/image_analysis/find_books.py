@@ -1,13 +1,15 @@
 """Find books on a book shelf."""
+from itertools import pairwise, product
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage as ski
+from loguru import logger
 
 from ..plotting import plot_lines, set_axes_off
 from .models import Book, Line, Shelf
-from .utilities import find_lines, windows
+from .utilities import drop_zero_rows_cols, find_lines, windows
 
 
 def find_book_lines(img: np.ndarray) -> tuple[list[Line], list[np.ndarray]]:
@@ -17,7 +19,12 @@ def find_book_lines(img: np.ndarray) -> tuple[list[Line], list[np.ndarray]]:
     sobel = ski.filters.sobel_v(equalized)
     canny = ski.feature.canny(sobel, sigma=1.5)
     tested_angles = np.linspace(np.pi * 5 / 6, np.pi * 7 / 6, 101, endpoint=True)
-    return find_lines(canny, tested_angles, min_dist=20), [
+    return find_lines(
+        canny,
+        tested_angles,
+        min_dist=20,
+        min_hspace_threshold=200,
+    ).lines, [
         gray,
         equalized,
         sobel,
@@ -50,23 +57,13 @@ def _plot_book_lines(
 
 def isolate_book(img: np.ndarray, left: Line, right: Line, key: str) -> Book:
     """Isolate a shelf from the original image given its top and bottom lines."""
-    width = img.shape[1]
-    # dst = np.array(
-    #     [
-    #         [0, top.row_intercept],
-    #         [width, top.row(width)],
-    #         [width, bottom.row(width)],
-    #         [0, bottom.row_intercept],
-    #     ]
-    # )
-    # TODO: figure out boundaries for original image.
-    dst = np.array([])
-    height = np.mean([dst[3, 1] - dst[0, 1], dst[2, 1] - dst[1, 1]]).round()
-    src = np.array([[0, 0], [width, 0], [width, height], [0, height]])
-    tform = ski.transform.ProjectiveTransform()
-    tform.estimate(src, dst)
-    warped: np.ndarray = ski.transform.warp(img, tform, output_shape=(height, width))
-    return Book(key=key, left=left, right=right, image=warped)
+    mask = img.copy()
+    logger.debug("Isolating book.")
+    for r, c in product(range(img.shape[0]), range(img.shape[1])):
+        if not (left.col(r) < c < right.col(r)):
+            mask[r, c] = 0
+    mask = drop_zero_rows_cols(mask)
+    return Book(key=key, left=left, right=right, image=img)
 
 
 def find_books(shelf: Shelf, output_dir: Path | None = None) -> list[Book]:
@@ -83,14 +80,25 @@ def find_books(shelf: Shelf, output_dir: Path | None = None) -> list[Book]:
     -------
         list[Book]: List of books isolated from the shelf.
     """
-    for i, (window, _) in enumerate(windows(shelf.image)):
+    logger.debug(f"Isolating books from shelf {shelf.key}.")
+    books: list[Book] = []
+    for w, (window, _) in enumerate(windows(shelf.image)):
         book_lines, prepped_img = find_book_lines(window)
+        logger.debug(f"Found {len(book_lines)} lines in window {w}.")
+        if len(book_lines) < 2:  # noqa: PLR2004
+            continue
+
         book_lines.sort(key=lambda line: line.row_intercept)
         _plot_book_lines(
             window,
             prepped_img,
             lines=book_lines,
-            key=f"{shelf.key}_{i}",
+            key=f"{shelf.key}_{w}",
             output_dir=output_dir,
         )
-    return []
+        for b, (left, right) in enumerate(pairwise(book_lines)):
+            books.append(
+                isolate_book(window, left, right, key=f"{shelf.key}_w{w}_b{b}")
+            )
+    logger.info(f"Found {len(books)} books for shelf {shelf.key}")
+    return books
