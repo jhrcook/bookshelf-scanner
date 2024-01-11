@@ -51,7 +51,10 @@ def _plot_shelves(shelves: list[Shelf], output_dir: Path | None) -> None:
     img_width = shelves[0].image.shape[1]
     height = width / img_width * img_height
     fig, axes = plt.subplots(
-        nrows=len(shelves), figsize=(width, height), height_ratios=img_heights
+        nrows=len(shelves),
+        figsize=(width, height),
+        height_ratios=img_heights,
+        squeeze=False,
     )
     axes = axes.flatten()
     for ax, shelf in zip(axes, shelves, strict=False):
@@ -67,7 +70,7 @@ def _plot_shelf_lines(
         return
     width = 9
     height = width / img.shape[1] * img.shape[0]
-    fig, ax = plt.subplots(figsize=(width, height))
+    fig, ax = plt.subplots(figsize=(width, height), squeeze=True)
     plot_lines(img, lines=lines, ax=ax)
     ax.set_title("results")
     fig.savefig(output_dir / "shelves.jpeg", dpi=300)

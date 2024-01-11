@@ -24,6 +24,9 @@ dependencies = [
     "typer",
     "pydantic",
     "more-itertools",
+    "pandas",
+    "pyarrow",
+    "polars",
 ]
 
 [project.scripts]

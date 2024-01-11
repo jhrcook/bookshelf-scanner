@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 import numpy as np
+import polars as pl
 
 
 @dataclass
@@ -78,8 +79,22 @@ class Book:
 
 
 @dataclass
+class OCRResult:
+
+    """Results from OCR."""
+
+    data_frame: pl.DataFrame
+
+    @property
+    def formatted_text(self) -> str:
+        """Formatted text."""
+        return " ".join(self.data_frame["text"].to_list())
+
+
+@dataclass
 class BookData:
 
     """Extracted book information."""
 
     key: str
+    ocr_results: list[OCRResult]

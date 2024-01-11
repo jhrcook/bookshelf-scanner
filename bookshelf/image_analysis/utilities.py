@@ -52,11 +52,11 @@ def find_lines(
         hspace, angles, distances, min_distance=min_dist, threshold=hspace_threshold
     )
     if hspace.size > 0:
-        logger.debug(
+        logger.trace(
             f"hspace avg: {hspace.mean().round(3)}  max: {hspace.max().round(3)}"
         )
     else:
-        logger.debug("No lines found.")
+        logger.trace("No lines found.")
 
     lines = []
     for theta, r in zip(angles, distances, strict=False):
@@ -69,6 +69,13 @@ def find_lines(
 def filter_otsu(img: np.ndarray) -> np.ndarray:
     """Otsu thresholding filter."""
     return img > ski.filters.threshold_otsu(img)
+
+
+def flip_background(img: np.ndarray) -> np.ndarray:
+    """Flip the intensities if more ones than zeros."""
+    if (img == 0).sum() < (img == 1).sum():
+        return np.invert(img)
+    return img
 
 
 def windows(
