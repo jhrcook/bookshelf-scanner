@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 from typing import Annotated, Optional
 
+import more_itertools
 import skimage as ski
 from loguru import logger
 from typer import Argument, Option, Typer
@@ -62,7 +63,7 @@ def isolate_books(
 @app.command()
 def ocr(
     book: Annotated[
-        list[Path],
+        list[str],
         Argument(
             help="Image of an isolated book.",
             file_okay=True,
@@ -81,7 +82,9 @@ def ocr(
     if output_dir is not None and not output_dir.exists():
         output_dir.mkdir()
 
-    for fpath in book:
+    fpaths = more_itertools.flatten([Path().glob(b) for b in book])
+    for fpath in fpaths:
+        # fpath = Path(fpath_str)
         logger.info(f"Scanning image '{fpath.name}'")
         name = fpath.name.removesuffix(fpath.suffix)
         image = ski.io.imread(fpath)
