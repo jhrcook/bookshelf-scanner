@@ -49,7 +49,12 @@ def extract_books_from_bookshelf_image(
     """
     books = isolate_books_from_bookshelf_image(img, output_dir)
     logger.info("Running OCR on books.")
-    book_info = [read_book_data(b, output_dir) for b in list(books)]
-    for res in book_info:
-        print(res)
-    return book_info
+    books_info = []
+    for book in books:
+        img_outfile = (
+            None
+            if output_dir is None
+            else output_dir / f"{book.key}_ocr-processed.jpeg"
+        )
+        books_info.append(read_book_data(book, img_outfile))
+    return books_info

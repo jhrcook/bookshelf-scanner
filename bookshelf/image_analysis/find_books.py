@@ -55,6 +55,7 @@ def _plot_book_lines(
     axes[-1].set_title("lines")
     set_axes_off(axes)
     fig.savefig(output_dir / f"{key}_books.jpeg", dpi=300)
+    plt.close()
 
 
 def isolate_book(img: np.ndarray, left: Line, right: Line, key: str) -> Book:
@@ -80,6 +81,7 @@ def _plot_books(books: Sequence[Book], output_fname: Path) -> None:
     for ax, book in zip(axes.flatten(), books, strict=False):
         ax.imshow(book.image)
     fig.savefig(output_fname, dpi=300)
+    plt.close()
 
 
 def find_books(shelf: Shelf, output_dir: Path | None = None) -> list[Book]:

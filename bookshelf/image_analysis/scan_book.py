@@ -38,6 +38,7 @@ def _plot_processing(
     set_axes_off(grid_axes)
     fig.tight_layout()
     fig.savefig(out_file, dpi=400)
+    plt.close()
 
 
 def _preprocessing_pipeline_1(
@@ -91,7 +92,10 @@ def _preprocessing_pipeline_2(
 
 
 def read_book_data(
-    book: Book | np.ndarray, processing_out_path: Path | None = None, min_conf: int = 10
+    book: Book | np.ndarray,
+    processing_out_path: Path | None = None,
+    min_conf: int = 10,
+    key: str = "",
 ) -> BookData:
     """Read book data from a book isolated from a shelf.
 
@@ -100,6 +104,7 @@ def read_book_data(
         book (Book | np.ndarray): Isolated book.
         processing_out_path (Path | None, optional): File path for where to write the processing pipeline images. Defaults to `None`.
         min_conf (int, optional): Minimum confidence threshold for detected text. The range is [-1, 100]. Defaults to 10.
+        key (str): Identifying key to use if an image is passed.
 
     Returns:
     -------
@@ -141,4 +146,5 @@ def read_book_data(
                 logger.trace("No text found.")
     if processing_out_path:
         _plot_processing(pipeline_res, processing_out_path)
-    return BookData(key="key", ocr_results=ocr_results)
+    _key = book.key if isinstance(book, Book) else key
+    return BookData(key=_key, ocr_results=ocr_results)

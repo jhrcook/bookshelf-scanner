@@ -61,6 +61,7 @@ def _plot_shelves(shelves: list[Shelf], output_dir: Path | None) -> None:
         ax.imshow(shelf.image)
         ax.set_axis_off()
     fig.savefig(output_dir / "shelves-isolated.jpeg", dpi=300)
+    plt.close()
 
 
 def _plot_shelf_lines(
@@ -74,6 +75,7 @@ def _plot_shelf_lines(
     plot_lines(img, lines=lines, ax=ax)
     ax.set_title("results")
     fig.savefig(output_dir / "shelves.jpeg", dpi=300)
+    plt.close()
 
 
 def find_shelves(

@@ -16,17 +16,17 @@ classifiers = [
 ]
 dependencies = [
     "loguru",
-    "scikit-image",
-    "numpy",
-    "scipy",
-    "pytesseract",
     "matplotlib",
-    "typer",
-    "pydantic",
     "more-itertools",
+    "numpy",
     "pandas",
-    "pyarrow",
     "polars",
+    "pyarrow",
+    "pydantic",
+    "pytesseract",
+    "scikit-image",
+    "scipy",
+    "typer[all]",
 ]
 
 [project.scripts]

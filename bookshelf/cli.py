@@ -7,6 +7,7 @@ from typing import Annotated, Optional
 import more_itertools
 import skimage as ski
 from loguru import logger
+from rich import print as rprint
 from typer import Argument, Option, Typer
 
 from . import scan
@@ -22,18 +23,25 @@ def scan_books(
         Path, Argument(help="Image file.", dir_okay=False, file_okay=True, exists=True)
     ],
     output_dir: Annotated[
-        Path,
-        Argument(
+        Optional[Path],
+        Option(
             help="Directory to which output is saved.", dir_okay=True, file_okay=False
         ),
-    ],
+    ] = None,
 ) -> None:
     """Identify books."""
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
-    output_dir.mkdir()
-    _results = scan(image_file, output_dir=output_dir)
-    # print(results)
+    if output_dir is not None:
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+        output_dir.mkdir()
+    results = scan(image_file, output_dir=output_dir)
+    for book_data in results:
+        if len(book_data.ocr_results) == 0:
+            rprint("No text identifed for [blue]{book_data.key}[/blue].")
+            continue
+        rprint(f"Results for [blue]{book_data.key}[/blue]:")
+        for ocr in book_data.ocr_results:
+            rprint(f" {ocr.formatted_text}")
 
 
 @app.command()
@@ -91,7 +99,12 @@ def ocr(
         processing_out_path = None
         if output_dir:
             processing_out_path = output_dir / f"{name}_processed.jpeg"
-        result = read_book_data(image, processing_out_path, min_conf=-1)
+        result = read_book_data(
+            image,
+            processing_out_path,
+            min_conf=-1,
+            key=fpath.name.removesuffix(fpath.suffix),
+        )
         if len(result.ocr_results):
             for ocr_result in result.ocr_results:
                 print(f"text: '{ocr_result.formatted_text}'")
