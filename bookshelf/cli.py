@@ -29,6 +29,17 @@ def scan_books(
             help="Directory to which output is saved.", dir_okay=True, file_okay=False
         ),
     ] = None,
+    book_db: Annotated[
+        Optional[Path],
+        Option(
+            help="Search the results against titles and authors in a database of books.",
+            file_okay=True,
+            dir_okay=False,
+            exists=True,
+        ),
+    ] = None,
+    min_fuzz_matching_score: int = 50,
+    top_fuzz_matches: int = 10,
 ) -> None:
     """Identify books."""
     if output_dir is not None:
@@ -36,13 +47,30 @@ def scan_books(
             shutil.rmtree(output_dir)
         output_dir.mkdir()
     results = scan(image_file, output_dir=output_dir)
+    book_database = BookDatabase(book_db) if book_db is not None else None
     for book_data in results:
         if len(book_data.ocr_results) == 0:
-            rprint("No text identifed for [blue]{book_data.key}[/blue].")
+            rprint("No text identified for [blue]{book_data.key}[/blue].")
             continue
         rprint(f"Results for [blue]{book_data.key}[/blue]:")
         for ocr in book_data.ocr_results:
             rprint(f" {ocr.formatted_text}")
+        if book_database is not None:
+            logger.info("Search book database...")
+            db_matches = fuzzy_search.fuzzy_search(
+                book_data, book_database, min_score=min_fuzz_matching_score
+            )
+            merged_db_matches = fuzzy_search.summarize_matches(db_matches)
+            logger.info("Done.")
+            if len(db_matches) == 0:
+                logger.warning("No matches in book database. ")
+                continue
+
+            logger.info(f"Found {len(merged_db_matches)} matches in book database.")
+            _n = min(len(merged_db_matches), top_fuzz_matches)
+            for db_match, hits in merged_db_matches[:_n]:
+                top_score = max(h.score for h in hits)
+                logger.info(f"{db_match} (top score: {top_score})")
 
 
 @app.command()
