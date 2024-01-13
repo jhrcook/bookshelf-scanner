@@ -6,8 +6,36 @@ build-backend = "flit_core.buildapi"
 name = "bookshelf"
 authors = [{ name = "Joshua Cook", email = "joshuacook0023@gmail.com" }]
 license = { file = "LICENSE" }
-classifiers = ["License :: OSI Approved :: MIT License"]
 dynamic = ["version", "description"]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Typing :: Typed",
+]
+dependencies = [
+    "loguru",
+    "matplotlib",
+    "more-itertools",
+    "numpy",
+    "pandas",
+    "polars",
+    "pyarrow",
+    "pydantic",
+    "pytesseract",
+    "scikit-image",
+    "scipy",
+    "typer[all]",
+    "thefuzz",
+]
+
+[project.scripts]
+books = "bookshelf.cli:app"
+
+[project.optional-dependencies]
+test = ["pytest"]
+dev = ["pre-commit", "ruff", "mypy", "ptpython"]
 
 [project.urls]
 Home = "https://github.com/jhrcook/bookshelf-scanner"
@@ -82,7 +110,7 @@ select = [
     "PERF",
     "RUF",
 ]
-ignore = ["D211", "D213"]
+ignore = ["D211", "D213", "E501", "ANN101"]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
