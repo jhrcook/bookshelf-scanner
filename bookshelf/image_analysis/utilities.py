@@ -7,7 +7,7 @@ import numpy as np
 import skimage as ski
 from loguru import logger
 
-from .models import Line, Point
+from ..models import Line, Point
 
 
 @dataclass

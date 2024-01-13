@@ -8,8 +8,8 @@ import numpy as np
 import skimage as ski
 from loguru import logger
 
+from ..models import Line, Point, Shelf
 from ..plotting import plot_lines
-from .models import Line, Point, Shelf
 from .utilities import find_lines
 
 

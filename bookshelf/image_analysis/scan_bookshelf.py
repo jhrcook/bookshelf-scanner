@@ -8,9 +8,9 @@ from more_itertools import flatten
 
 from bookshelf.image_analysis.scan_book import read_book_data
 
+from ..models import Book, BookData
 from . import find_shelves
 from .find_books import find_books
-from .models import Book, BookData
 
 
 def isolate_books_from_bookshelf_image(

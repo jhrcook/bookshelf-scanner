@@ -98,3 +98,19 @@ class BookData:
 
     key: str
     ocr_results: list[OCRResult]
+
+
+@dataclass
+class KnownBook:
+
+    """Data for a known book."""
+
+    title: str
+    authors: list[str]
+    uuid: str | None = None
+
+    @property
+    def description(self) -> str:
+        """Description."""
+        _a = ", ".join(self.authors)
+        return f"'{self.title}' by {_a}"

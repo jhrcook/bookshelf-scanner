@@ -9,9 +9,9 @@ import skimage as ski
 from loguru import logger
 from matplotlib import pyplot as plt
 
+from ..models import Book, BookData, OCRResult
 from ..plotting import set_axes_off
 from . import utilities
-from .models import Book, BookData, OCRResult
 
 
 def _plot_processing(

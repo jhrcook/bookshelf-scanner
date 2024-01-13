@@ -9,8 +9,8 @@ import numpy as np
 import skimage as ski
 from loguru import logger
 
+from ..models import Book, Line, Shelf
 from ..plotting import plot_lines, set_axes_off
-from .models import Book, Line, Shelf
 from .utilities import drop_zero_rows_cols, find_lines, windows
 
 

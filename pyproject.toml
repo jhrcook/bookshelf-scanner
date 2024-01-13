@@ -27,6 +27,7 @@ dependencies = [
     "scikit-image",
     "scipy",
     "typer[all]",
+    "thefuzz",
 ]
 
 [project.scripts]

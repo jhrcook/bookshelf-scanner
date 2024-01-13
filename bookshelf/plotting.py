@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 
-from .image_analysis.models import Line
+from .models import Line
 
 
 def plot_lines(img: np.ndarray, lines: Iterable[Line], ax: Axes | None = None) -> None:

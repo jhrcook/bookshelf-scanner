@@ -10,7 +10,8 @@ from loguru import logger
 from rich import print as rprint
 from typer import Argument, Option, Typer
 
-from . import scan
+from . import fuzzy_search, scan
+from .book_database import BookDatabase
 from .image_analysis.scan_book import read_book_data
 from .image_analysis.scan_bookshelf import isolate_books_from_bookshelf_image
 
@@ -85,14 +86,25 @@ def ocr(
             help="Directory to which output is saved.", dir_okay=True, file_okay=False
         ),
     ] = None,
+    book_db: Annotated[
+        Optional[Path],
+        Option(
+            help="Search the results against titles and authors in a database of books.",
+            file_okay=True,
+            dir_okay=False,
+            exists=True,
+        ),
+    ] = None,
+    min_fuzz_matching_score: int = 50,
+    top_fuzz_matches: int = 10,
 ) -> None:
     """Run OCR on an isolated book."""
     if output_dir is not None and not output_dir.exists():
         output_dir.mkdir()
 
     fpaths = more_itertools.flatten([Path().glob(b) for b in book])
+    book_database = BookDatabase(book_db) if book_db is not None else None
     for fpath in fpaths:
-        # fpath = Path(fpath_str)
         logger.info(f"Scanning image '{fpath.name}'")
         name = fpath.name.removesuffix(fpath.suffix)
         image = ski.io.imread(fpath)
@@ -102,11 +114,29 @@ def ocr(
         result = read_book_data(
             image,
             processing_out_path,
-            min_conf=-1,
+            min_conf=1,
             key=fpath.name.removesuffix(fpath.suffix),
         )
-        if len(result.ocr_results):
-            for ocr_result in result.ocr_results:
-                print(f"text: '{ocr_result.formatted_text}'")
-        else:
+        if len(result.ocr_results) == 0:
             logger.warning("No text found.")
+            continue
+
+        for ocr_result in result.ocr_results:
+            logger.info(f"text: '{ocr_result.formatted_text}'")
+
+        if book_database is not None:
+            logger.info("Search book database...")
+            db_matches = fuzzy_search.fuzzy_search(
+                result, book_database, min_score=min_fuzz_matching_score
+            )
+            merged_db_matches = fuzzy_search.summarize_matches(db_matches)
+            logger.info("Done.")
+            if len(db_matches) == 0:
+                logger.warning("No matches in book database. ")
+                continue
+
+            logger.info(f"Found {len(merged_db_matches)} matches in book database.")
+            _n = min(len(merged_db_matches), top_fuzz_matches)
+            for db_match, hits in merged_db_matches[:_n]:
+                top_score = max(h.score for h in hits)
+                logger.info(f"{db_match} (top score: {top_score})")
